@@ -10,7 +10,7 @@ const svg = d3.select("#container")
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
 
-d3.csv("./adult.csv", null, function (data) {
+d3.csv("https://github.com/SofiaGodovykh/DataViz/blob/main/adult.csv", null, function (data) {
     //d3.select("#container")
 
     // X axis: scale and draw:
