@@ -1,15 +1,25 @@
+/*
 var margin = {top: 10, right: 30, bottom: 30, left: 40},
     width = 460 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
+*/
+
+const margin = {top: 20, right: 30, bottom: 60, left: 40},
+  width = 800 - margin.left - margin.right,
+  height = 500 - margin.top - margin.bottom,
+  pieWidth = 400,
+  pieHeight = 400; // Height for the pie chart SVG
+
 
 const svg = d3.select("#container")
     .append("svg")
       .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("height", height + margin.top + margin.bottom + 400)
     .append("g")
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
 
+/*
 const textBlock = svg.append("text")
   .attr("x", 50)
   .attr("y", 100)
@@ -39,7 +49,7 @@ textBlock.selectAll("tspan")
   .attr("x", textBlock.attr("x"))
   .attr("dy", (d, i) => i * 20) // Line spacing
   .text(d => d);
-
+*/
 /*
 d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv").then(function (data) {
     var x = d3.scaleBand()
@@ -74,75 +84,9 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
 });
 */
 
-/*
-d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv").then(data => {
-    // Aggregate the data
-    const aggregatedData = {};
-    data.forEach(d => {
-        const key = `${d.Sex}_${d.Income}`;
-        if (!aggregatedData[key]) {
-            aggregatedData[key] = { Sex: d.Sex, Income: d.Income, count: 0 };
-        }
-        aggregatedData[key].count++;
-    });
-
-    // Convert aggregated data to array
-    const flatData = Object.values(aggregatedData);
-
-    // Set up scales
-    const x0 = d3.scaleBand()
-        .domain(flatData.map(d => d.Sex))
-        .range([0, width])
-        .paddingInner(0.1);
-
-    const x1 = d3.scaleBand()
-        .domain(['less than 50k', 'more than 50k'])
-        .range([0, x0.bandwidth()])
-        .padding(0.05);
-
-    const y = d3.scaleLinear()
-        .domain([0, d3.max(flatData, d => d.count)])
-        .nice()
-        .range([height, 0]);
-
-    // Set up axes
-    svg.append("g")
-        .call(d3.axisLeft(y));
-
-    svg.append("g")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x0));
-
-    // Draw the bars
-    svg.selectAll(".bars")
-        .data(flatData)
-        .enter()
-        .append("g")
-        .attr("transform", d => `translate(${x0(d.Sex)},0)`)
-        .selectAll("rect")
-        .data(d => [d])
-        .enter()
-        .append("rect")
-        .attr("x", d => x1(d.Income))
-        .attr("y", d => y(d.count))
-        .attr("width", x1.bandwidth())
-        .attr("height", d => height - y(d.count))
-        .attr("class", "bar")
-        .attr("fill", d => d.Income === '>50K' ? 'steelblue' : 'orange');
-
-    // Add labels
-    svg.selectAll(".bar text")
-        .data(flatData)
-        .enter()
-        .append("text")
-        .attr("x", d => x0(d.Sex) + x1(d.Income) + x1.bandwidth() / 2)
-        .attr("y", d => y(d.count) - 5)
-        .text(d => d.count);
-});
-*/
 
 d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv").then(data => {
-    // Aggregate the data
+    // Aggregate the data for the bar chart
     const aggregatedData = {};
     data.forEach(d => {
         const key = `${d.sex}_${d.income}`;
@@ -155,7 +99,7 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
     // Convert aggregated data to array
     const flatData = Object.values(aggregatedData);
 
-    // Set up scales
+    // Set up scales for the bar chart
     const x0 = d3.scaleBand()
         .domain(['Female', 'Male'])
         .range([0, width])
@@ -171,7 +115,7 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
         .nice()
         .range([height, 0]);
 
-    // Set up axes
+    // Set up axes for the bar chart
     svg.append("g")
         .call(d3.axisLeft(y));
 
@@ -196,7 +140,7 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
         .attr("class", "bar")
         .attr("fill", d => d.Income === '>50K' ? 'steelblue' : 'orange');
 
-    // Add labels
+    // Add labels to the bars
     svg.selectAll(".bar-group")
         .data(['Female', 'Male'])
         .enter()
@@ -212,7 +156,7 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
         .attr("text-anchor", "middle")
         .attr("fill", "black");
 
-    // Add legend
+    // Add legend for the bar chart
     const legendData = [
         {label: "<=50K", color: "orange"},
         {label: ">50K", color: "steelblue"}
@@ -237,5 +181,77 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
         .attr("dy", ".35em")
         .style("text-anchor", "end")
         .text(d => d.label);
-});
 
+    // Prepare data for the pie chart
+    const pieDataFemale = d3.rollup(flatData.filter(d => d.Sex === 'Female'), v => d3.sum(v, d => d.count), d => d.Income);
+    const pieDataMale = d3.rollup(flatData.filter(d => d.Sex === 'Male'), v => d3.sum(v, d => d.count), d => d.Income);
+    const pieDataArrayFemale = Array.from(pieDataFemale, ([key, value]) => ({ key, value }));
+    const pieDataArrayMale = Array.from(pieDataMale, ([key, value]) => ({ key, value }));
+
+    // Set up the pie chart
+    const pie = d3.pie()
+        .value(d => d.value)
+        .sort(null);
+
+    const arc = d3.arc()
+        .innerRadius(0)
+        .outerRadius(Math.min(pieWidth, pieHeight) / 4);
+
+    // Append the pie charts to the existing SVG
+    const pieGroupFemale = svg.append("g")
+        .attr("transform", `translate(${margin.left + pieWidth / 4},${height + pieHeight / 2})`);
+
+    const pieGroupMale = svg.append("g")
+        .attr("transform", `translate(${margin.left + pieWidth + pieWidth / 4},${height + pieHeight / 2})`);
+
+    // Draw the pie chart for females
+    pieGroupFemale.selectAll('path')
+        .data(pie(pieDataArrayFemale))
+        .enter()
+        .append('path')
+        .attr('d', arc)
+        .attr('fill', d => d.data.key === '>50K' ? 'steelblue' : 'orange')
+        .attr('stroke', 'white')
+        .attr('stroke-width', '2px');
+
+    // Add labels to the pie chart for females
+    pieGroupFemale.selectAll('text')
+        .data(pie(pieDataArrayFemale))
+        .enter()
+        .append('text')
+        .text(d => `${d.data.key}: ${d.data.value}`)
+        .attr('transform', d => `translate(${arc.centroid(d)})`)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'black');
+    
+    // Draw the pie chart for males
+    pieGroupMale.selectAll('path')
+        .data(pie(pieDataArrayMale))
+        .enter()
+        .append('path')
+        .attr('d', arc)
+        .attr('fill', d => d.data.key === '>50K' ? 'steelblue' : 'orange')
+        .attr('stroke', 'white')
+        .attr('stroke-width', '2px');
+
+    // Add labels to the pie chart for males
+    pieGroupMale.selectAll('text')
+        .data(pie(pieDataArrayMale))
+        .enter()
+        .append('text')
+        .text(d => `${d.data.key}: ${d.data.value}`)
+        .attr('transform', d => `translate(${arc.centroid(d)})`)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'black');
+
+    // Add titles to the pie charts
+    pieGroupFemale.append("text")
+        .attr("text-anchor", "middle")
+        .attr("y", -pieHeight/4 - 10)
+        .text("Female");
+
+    pieGroupMale.append("text")
+        .attr("text-anchor", "middle")
+        .attr("y", -pieHeight / 4 - 10)
+        .text("Male");
+});
