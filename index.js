@@ -84,7 +84,6 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
 });
 */
 
-
 d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv").then(data => {
     // Aggregate the data for the bar chart
     const aggregatedData = {};
@@ -138,7 +137,29 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
         .attr("width", x1.bandwidth())
         .attr("height", d => height - y(d.count))
         .attr("class", "bar")
-        .attr("fill", d => d.Income === '>50K' ? 'steelblue' : 'orange');
+        .attr("fill", d => d.Income === '>50K' ? 'steelblue' : 'orange')
+        .on("mouseover", function(event, d) {
+            const [x, y] = d3.pointer(event);
+            const originalColor = d3.select(this).attr("fill");
+            const lighterColor = d3.color(originalColor).brighter(0.5);
+            d3.select(this)
+                .attr("fill", lighterColor);
+            svg.append("text")
+                .attr("id", "tooltip")
+                .attr("x", x + 100)
+                .attr("y", y - 5)
+                .text(d.count)
+                .attr("text-anchor", "middle")
+                .attr("fill", "black")
+                .style("font-size", "12px")
+                .style("font-weight", "bold");
+        })
+        .on("mouseout", function(event, d) {
+            d3.select(this)
+                .attr("fill", d => d.Income === '>50K' ? 'steelblue' : 'orange'); 
+            d3.select("#tooltip").remove(); // Remove the tooltip
+        });
+
 
     // Add labels to the bars
     svg.selectAll(".bar-group")
@@ -212,7 +233,40 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
         .attr('d', arc)
         .attr('fill', d => d.data.key === '>50K' ? 'steelblue' : 'orange')
         .attr('stroke', 'white')
-        .attr('stroke-width', '2px');
+        .attr('stroke-width', '2px')
+        .on("mouseover", function(event, d) {
+          d3.select(this)
+              .transition()
+              .duration(200)
+              .attr("d", d3.arc()
+                  .outerRadius(Math.min(pieWidth, pieHeight) / 4 + 5) // Slightly increase the radius on hover
+                  .innerRadius(0)
+              );
+          
+          const [mouseX, mouseY] = d3.pointer(event);
+          const originalColor = d3.select(this).attr("fill");
+          const lighterColor = d3.color(originalColor).brighter(0.5);
+          d3.select(this).attr("fill", lighterColor);
+
+            svg.append("text")
+                .attr("id", "tooltip-pie")
+                .attr("x", mouseX)
+                .attr("y", mouseY - 15)
+                .text(`Count: ${d.data.count}`)
+                .attr("text-anchor", "middle")
+                .attr("fill", "black")
+                .style("font-size", "12px")
+                .style("font-weight", "bold");
+        })
+        .on("mouseout", function(d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("d", arc)
+                .attr('fill', d => d.data.key === '>50K' ? 'steelblue' : 'orange')// Revert to original size
+
+            d3.select("#tooltip-pie").remove(); // Remove the tooltip
+        });
 
     // Add labels to the pie chart for females
     pieGroupFemale.selectAll('text')
@@ -232,7 +286,40 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
         .attr('d', arc)
         .attr('fill', d => d.data.key === '>50K' ? 'steelblue' : 'orange')
         .attr('stroke', 'white')
-        .attr('stroke-width', '2px');
+        .attr('stroke-width', '2px')
+        .on("mouseover", function(event, d) {
+          d3.select(this)
+              .transition()
+              .duration(200)
+              .attr("d", d3.arc()
+                  .outerRadius(Math.min(pieWidth, pieHeight) / 4 + 5) // Slightly increase the radius on hover
+                  .innerRadius(0)
+              );
+          
+          const [mouseX, mouseY] = d3.pointer(event);
+          const originalColor = d3.select(this).attr("fill");
+          const lighterColor = d3.color(originalColor).brighter(0.5);
+          d3.select(this).attr("fill", lighterColor);
+
+            svg.append("text")
+                .attr("id", "tooltip-pie")
+                .attr("x", mouseX)
+                .attr("y", mouseY - 15)
+                .text(`Count: ${d.data.count}`)
+                .attr("text-anchor", "middle")
+                .attr("fill", "black")
+                .style("font-size", "12px")
+                .style("font-weight", "bold");
+        })
+        .on("mouseout", function(d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("d", arc)
+                .attr('fill', d => d.data.key === '>50K' ? 'steelblue' : 'orange')// Revert to original size
+
+            d3.select("#tooltip-pie").remove(); // Remove the tooltip
+        });
 
     // Add labels to the pie chart for males
     pieGroupMale.selectAll('text')
