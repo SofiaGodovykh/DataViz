@@ -10,46 +10,37 @@ const svg = d3.select("#container")
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
 
-d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv", function (data) {
+d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv").then(function (data) {
+    // X axis
+
+    var x = d3.scaleBand()
+      .range([ 0, width ])
+      .domain(data.map(function(d) { return d['native.country']; }))
+      .padding(0.2);
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end");
     
-
-    // X axis: scale and draw:
-    var x = d3.scaleLinear()
-        .domain([0, 1000])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
-        .range([0, width]);
-    svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
-
-    // set the parameters for the histogram
-    var histogram = d3.histogram()
-        .value(function(d) {
-
-            return d.age; })
-        // I need to give the vector of value
-        .domain(x.domain())  // then the domain of the graphic
-        .thresholds(x.ticks(70)); // then the numbers of bins
-
-    // And apply this function to data to get the bins
-    var bins = histogram(data);
-
-    // Y axis: scale and draw:
+    // Add Y axis
     var y = d3.scaleLinear()
-        .range([height, d3.max(bins, function(d) { return d.length; })]);
-    y.domain([0, d3.max(bins, function(d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
+      .domain([0, 100])
+      .range([ height, 0]);
     svg.append("g")
-        .call(d3.axisLeft(y));
-
-    // append the bar rectangles to the svg element
-    svg.selectAll("rect")
-        .data(bins)
-        .enter()
-        .append("rect")
-        .attr("x", 1)
-        .attr("transform", function(d) {
-            console.log(d);
-            return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
-        .attr("width", function(d) { return x(d.x1) - x(d.x0) -1 ; })
-        .attr("height", function(d) { return height - y(d.length); })
-        .style("fill", "#69b3a2");
+      .call(d3.axisLeft(y));
+    
+    // Bars
+    svg.selectAll("mybar")
+      .data(data)
+      .enter()
+      .append("rect")
+        .attr("x", function(d) { return x(d['native.country']); })
+        .attr("y", function(d) { return y(d.age); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return height - y(d.age); })
+        .attr("fill", "#69b3a2")
+    
+    
 })
