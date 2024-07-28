@@ -20,6 +20,7 @@ function create_svg() {
           .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 }
+
 create_svg();
 
 /*
@@ -86,6 +87,13 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
     
 });
 */
+
+var button = document.querySelector("button")
+button.addEventListener("click", event => {
+            create_svg()
+            original_data.then(handler)
+            select.style.display = "block"
+})
 
 var tooltip = d3.select("body")
   .append("div")
