@@ -84,6 +84,14 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
 });
 */
 
+var tooltip = d3.select("body")
+  .append("div")
+  .style("position", "absolute")
+  .style("z-index", "10")
+  .style("visibility", "hidden")
+  .style("background", "white")
+  .text("a simple tooltip");
+
 d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv").then(data => {
     // Aggregate the data for the bar chart
     const aggregatedData = {};
@@ -117,6 +125,17 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
     // Set up axes for the bar chart
     svg.append("g")
         .call(d3.axisLeft(y));
+    
+    svg.append("text")
+//      .attr("class", "y label")
+      .attr("text-anchor", "end")
+      .attr("y", 6)
+      .attr("dy", ".75em")
+      .style("transform", "translateX(150px)")
+      //.attr("")
+      .style("font-size", "16")
+      .text("total number of people");
+      //.style("font-weight", "bold");
 
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
@@ -139,22 +158,44 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
         .attr("class", "bar")
         .attr("fill", d => d.Income === '>50K' ? 'steelblue' : 'orange')
         .on("mouseover", function(event, d) {
-            const [x, y] = d3.pointer(event);
+            /*const [x, y] = d3.pointer(event);
+            console.log(x, y)
             const originalColor = d3.select(this).attr("fill");
             const lighterColor = d3.color(originalColor).brighter(0.5);
             d3.select(this)
                 .attr("fill", lighterColor);
             svg.append("text")
                 .attr("id", "tooltip")
-                .attr("x", x + 100)
+                .attr("x", event.pageX - 25)
                 .attr("y", y - 5)
                 .text(d.count)
                 .attr("text-anchor", "middle")
                 .attr("fill", "black")
-                .style("font-size", "12px")
-                .style("font-weight", "bold");
+                .style("font-size", "24px"); */
+            tooltip.text(d.count)
+            tooltip.style("visibility", "visible")
+        })
+        .on("mousemove", function (event, d){
+          const [x, y] = d3.pointer(event);
+          console.log(x, y)
+          const originalColor = d3.select(this).attr("fill");
+          const lighterColor = d3.color(originalColor).brighter(0.5);
+          tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");
+    /*
+          d3.select(this)
+              .attr("fill", lighterColor);
+          svg.append("text")
+              .attr("id", "tooltip")
+              .attr("x", event.pageX - 25)
+              .attr("y", y - 5)
+              .text(d.count)
+              .attr("text-anchor", "middle")
+              .attr("fill", "black")
+              .style("font-size", "24px");
+              */
         })
         .on("mouseout", function(event, d) {
+            tooltip.style("visibility", "hidden")
             d3.select(this)
                 .attr("fill", d => d.Income === '>50K' ? 'steelblue' : 'orange'); 
             d3.select("#tooltip").remove(); // Remove the tooltip
@@ -173,7 +214,7 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
         .append("text")
         .attr("x", d => x1(d.Income) + x1.bandwidth() / 2)
         .attr("y", d => y(d.count) - 5)
-        .text(d => d.count)
+        //.text(d => d.count)
         .attr("text-anchor", "middle")
         .attr("fill", "black");
 
