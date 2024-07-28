@@ -388,7 +388,7 @@ function handler(data) {
 
           d3.select(this).attr("fill", lighterColor);
 
-            svg.append("text")
+            /*svg.append("text")
                 .attr("id", "tooltip-pie")
                 .attr("x", mouseX)
                 .attr("y", mouseY - 15)
@@ -396,15 +396,21 @@ function handler(data) {
                 .attr("text-anchor", "middle")
                 .attr("fill", "black")
                 .style("font-size", "12px")
-                .style("font-weight", "bold");
+                .style("font-weight", "bold");*/
         })
+        .on("mousemove", function (event, d){
+            const [x, y] = d3.pointer(event);
+            console.log(x, y)
+            const originalColor = d3.select(this).attr("fill");
+            const lighterColor = d3.color(originalColor).brighter(0.5);
+            tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px")})
         .on("mouseout", function(d) {
             d3.select(this)
                 .transition()
                 .duration(200)
                 .attr("d", arc)
                 .attr('fill', d => d.data.key === '>50K' ? 'steelblue' : 'orange')// Revert to original size
-
+            tooltip.style("visibility", "hidden")
             d3.select("#tooltip-pie").remove(); // Remove the tooltip
         });
 
@@ -413,7 +419,8 @@ function handler(data) {
         .data(pie(pieDataArrayMale))
         .enter()
         .append('text')
-        .text(d => `${d.data.key}: ${d.data.value}`)
+        .text(d => `${d.data.key}`)
+        //.text(d => `${d.data.key}: ${d.data.value}`)
         .attr('transform', d => `translate(${arc.centroid(d)})`)
         .attr('text-anchor', 'middle')
         .attr('fill', 'black');
