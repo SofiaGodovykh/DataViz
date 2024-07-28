@@ -10,6 +10,36 @@ const svg = d3.select("#container")
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
 
+const textBlock = svg.append("text")
+  .attr("x", 50)
+  .attr("y", 100)
+  .attr("class", "text-block");
+
+
+
+svg.append("text")
+  .attr("x", 300) // X position
+  .attr("y", 40)  // Y position
+  .attr("text-anchor", "middle") // Center the text
+  .attr("class", "title")
+  .text("Gender pay gap problem");
+
+const lines = [
+            "It is widely known that the gender pay gap persists, reflecting the difference",
+            "in earnings between men and women. However, this disparity is narrower when comparing",
+            "men and women with similar education levels and work experience.",
+            "Factors like occupation type, industry, and work hours also contribute to the gap.",
+            "We will explore how these factors influence men and women earnings."
+        ];
+
+textBlock.selectAll("tspan")
+  .data(lines)
+  .enter()
+  .append("tspan")
+  .attr("x", textBlock.attr("x"))
+  .attr("dy", (d, i) => i * 20) // Line spacing
+  .text(d => d);
+
 d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv").then(function (data) {
     // X axis
 
