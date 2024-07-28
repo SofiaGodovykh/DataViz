@@ -10,14 +10,17 @@ const margin = {top: 20, right: 30, bottom: 60, left: 40},
   pieWidth = 400,
   pieHeight = 400; // Height for the pie chart SVG
 
-
-const svg = d3.select("#container")
-    .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom + 400)
-    .append("g")
-      .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
+var svg;
+function create_svg() {
+    svg = d3.select("#container")
+        .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom + 400)
+        .append("g")
+          .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+}
+create_svg();
 
 /*
 const textBlock = svg.append("text")
@@ -92,7 +95,38 @@ var tooltip = d3.select("body")
   .style("background", "white")
   .text("a simple tooltip");
 
-d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv").then(data => {
+var ed_level;
+const select = document.querySelector("select");
+var filter_ed = (data, level) => {
+    console.log(data)
+    return data.filter(row => row.education === level)
+}
+select.addEventListener("change", event => {
+    ed_level = event.target.value;
+    original_data.then(_data => {
+        const filtered_data = filter_ed(_data, ed_level);
+        document.querySelector('#container').innerHTML = '';
+        create_svg();
+        handler(filtered_data);
+    })
+})
+
+
+var original_data = d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv");
+original_data.then(handler);
+function handler(data) {
+//    d3.select('#container').html = '';
+    
+//    console.log('handler')
+    var education_level = new Set(data.map(row => row.education))
+   
+    education_level.forEach(level => {
+        const option = document.createElement("option");
+        option.setAttribute("value", level);
+        option.innerText = level;
+        select.appendChild(option);
+    })
+
     // Aggregate the data for the bar chart
     const aggregatedData = {};
     data.forEach(d => {
@@ -341,6 +375,9 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
           const [mouseX, mouseY] = d3.pointer(event);
           const originalColor = d3.select(this).attr("fill");
           const lighterColor = d3.color(originalColor).brighter(0.5);
+          tooltip.text(`${d.data.value}`)
+          tooltip.style("visibility", "visible")
+
           d3.select(this).attr("fill", lighterColor);
 
             svg.append("text")
@@ -383,4 +420,4 @@ d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv
         .attr("text-anchor", "middle")
         .attr("y", -pieHeight / 4 - 10)
         .text("Male");
-});
+}
