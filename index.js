@@ -124,7 +124,7 @@ function handler(data) {
 
     // Set up scales for the bar chart
     const x0 = d3.scaleBand()
-        .domain(['Female', 'Male'])
+        .domain(['Women', 'Men'])
         .range([0, width])
         .paddingInner(0.1);
 
@@ -159,7 +159,7 @@ function handler(data) {
 
     // Draw the bars
     svg.selectAll(".bar-group")
-        .data(['Female', 'Male'])
+        .data(['Women', 'Men'])
         .enter()
         .append("g")
         .attr("transform", d => `translate(${x0(d)},0)`)
@@ -208,7 +208,7 @@ function handler(data) {
 
     // Add labels to the bars
     svg.selectAll(".bar-group")
-        .data(['Female', 'Male'])
+        .data(['Women', 'Men'])
         .enter()
         .append("g")
         .attr("transform", d => `translate(${x0(d)},0)`)
@@ -249,8 +249,8 @@ function handler(data) {
         .text(d => d.label);
 
     // Prepare data for the pie chart
-    const pieDataFemale = d3.rollup(flatData.filter(d => d.Sex === 'Female'), v => d3.sum(v, d => d.count), d => d.Income);
-    const pieDataMale = d3.rollup(flatData.filter(d => d.Sex === 'Male'), v => d3.sum(v, d => d.count), d => d.Income);
+    const pieDataFemale = d3.rollup(flatData.filter(d => d.Sex === 'Women'), v => d3.sum(v, d => d.count), d => d.Income);
+    const pieDataMale = d3.rollup(flatData.filter(d => d.Sex === 'Men'), v => d3.sum(v, d => d.count), d => d.Income);
     const pieDataArrayFemale = Array.from(pieDataFemale, ([key, value]) => ({ key, value }));
     const pieDataArrayMale = Array.from(pieDataMale, ([key, value]) => ({ key, value }));
 
@@ -391,10 +391,10 @@ function handler(data) {
     pieGroupFemale.append("text")
         .attr("text-anchor", "middle")
         .attr("y", -pieHeight/4 - 10)
-        .text("Female");
+        .text("Women");
 
     pieGroupMale.append("text")
         .attr("text-anchor", "middle")
         .attr("y", -pieHeight / 4 - 10)
-        .text("Male");
+        .text("Men");
 }
