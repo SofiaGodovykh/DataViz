@@ -23,76 +23,26 @@ function create_svg() {
 
 create_svg();
 
-/*
-const textBlock = svg.append("text")
-  .attr("x", 50)
-  .attr("y", 100)
-  .attr("class", "text-block");
-
-
-
-svg.append("text")
-  .attr("x", 300) // X position
-  .attr("y", 40)  // Y position
-  .attr("text-anchor", "middle") // Center the text
-  .attr("class", "title")
-  .text("Gender pay gap problem");
-
-const lines = [
-            "It is widely known that the gender pay gap persists, reflecting the difference",
-            "in earnings between men and women. However, this disparity is narrower when comparing",
-            "men and women with similar education levels and work experience.",
-            "Factors like occupation type, industry, and work hours also contribute to the gap.",
-            "We will explore how these factors influence men and women earnings."
-        ];
-
-textBlock.selectAll("tspan")
-  .data(lines)
-  .enter()
-  .append("tspan")
-  .attr("x", textBlock.attr("x"))
-  .attr("dy", (d, i) => i * 20) // Line spacing
-  .text(d => d);
-*/
-/*
-d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv").then(function (data) {
-    var x = d3.scaleBand()
-      .range([ 0, width ])
-      .domain(data.map(function(d) { return d['sex']; }))
-      .padding(0.2);
-    svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x))
-      .selectAll("text")
-        .attr("transform", "translate(-10,0)rotate(-45)")
-        .style("text-anchor", "end");
-    
-    // Add Y axis
-    var y = d3.scaleLinear()
-      .domain([0, 100])
-      .range([ height, 0]);
-    svg.append("g")
-      .call(d3.axisLeft(y));
-    
-    // Bars
-    svg.selectAll("mybar")
-      .data(data)
-      .enter()
-      .append("rect")
-        .attr("x", function(d) { return x(d['sex']); })
-        .attr("y", function(d) { return y(d.age); })
-        .attr("width", x.bandwidth())
-        .attr("height", function(d) { return height - y(d.age); })
-        .attr("fill", "#69b3a2")
-    
-});
-*/
+let clickCount = 0;
 
 var button = document.querySelector("button")
+
 button.addEventListener("click", event => {
-            create_svg()
-            original_data.then(handler)
-            select.style.display = "block"
+    clickCount++;
+    if (clickCount === 1) {
+        //console.log('First click event triggered!')
+        document.querySelector('#container').innerHTML = '';
+        create_svg();
+        original_data.then(handler)
+        select.style.display = "block"
+    };
+    if (clickCount > 1) {
+        //console.log('Second click event triggered!')
+        document.querySelector('#container').innerHTML = '';
+        create_svg();
+        original_data.then(handler)
+        select.style.display = "block"
+    };
 })
 
 var tooltip = d3.select("body")
@@ -106,8 +56,11 @@ var tooltip = d3.select("body")
 var ed_level;
 const select = document.querySelector("select");
 var filter_ed = (data, level) => {
-    console.log(data)
-    return data.filter(row => row.education === level)
+    if (clickCount <= 1){
+        return data.filter(row => row.education === level)
+    }
+    return data.filter(row => row.occupation === level)
+    
 }
 select.addEventListener("change", event => {
     ed_level = event.target.value;
@@ -119,22 +72,43 @@ select.addEventListener("change", event => {
     })
 })
 
-
 var original_data = d3.csv("https://raw.githubusercontent.com/sofiagodovykh/DataViz/master/adult.csv");
 original_data.then(handler);
 function handler(data) {
-//    d3.select('#container').html = '';
+    select.innerHTML = "";
+    var education_level = ""
+    if (clickCount <= 1) {
+        education_level = new Set(data.map(row => row.education))
+    }
     
-//    console.log('handler')
-    var education_level = new Set(data.map(row => row.education))
-   
+    if (clickCount > 1) {
+        education_level = new Set(data.map(row => row.occupation))
+    }
+
     education_level.forEach(level => {
         const option = document.createElement("option");
         option.setAttribute("value", level);
         option.innerText = level;
         select.appendChild(option);
     })
-
+    var plot_text = ""
+    if (clickCount == 0){
+        plot_text = "Total population"
+    }
+    if (clickCount == 1){
+        plot_text = "Income by education level"
+    }
+    if (clickCount >= 2){
+        plot_text = "Income by occupation"
+    }
+    svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2) + 10)
+        .attr("text-anchor", "middle")  
+        .style("font-size", "26px") 
+        .style("font-weight", "bold")  
+        .text(plot_text);
+    
     // Aggregate the data for the bar chart
     const aggregatedData = {};
     data.forEach(d => {
@@ -219,22 +193,10 @@ function handler(data) {
         })
         .on("mousemove", function (event, d){
           const [x, y] = d3.pointer(event);
-          console.log(x, y)
           const originalColor = d3.select(this).attr("fill");
           const lighterColor = d3.color(originalColor).brighter(0.5);
           tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");
-    /*
-          d3.select(this)
-              .attr("fill", lighterColor);
-          svg.append("text")
-              .attr("id", "tooltip")
-              .attr("x", event.pageX - 25)
-              .attr("y", y - 5)
-              .text(d.count)
-              .attr("text-anchor", "middle")
-              .attr("fill", "black")
-              .style("font-size", "24px");
-              */
+  
         })
         .on("mouseout", function(event, d) {
             tooltip.style("visibility", "hidden")
@@ -332,12 +294,12 @@ function handler(data) {
           
           tooltip.text(`${d.data.value}`)
           tooltip.style("visibility", "visible")
-          console.log(d)
+          //console.log(d)
           d3.select(this).attr("fill", lighterColor);
         })
         .on("mousemove", function (event, d){
           const [x, y] = d3.pointer(event);
-          console.log(x, y)
+          //console.log(x, y)
           const originalColor = d3.select(this).attr("fill");
           const lighterColor = d3.color(originalColor).brighter(0.5);
           tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px")})
@@ -400,7 +362,7 @@ function handler(data) {
         })
         .on("mousemove", function (event, d){
             const [x, y] = d3.pointer(event);
-            console.log(x, y)
+            //console.log(x, y)
             const originalColor = d3.select(this).attr("fill");
             const lighterColor = d3.color(originalColor).brighter(0.5);
             tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px")})
